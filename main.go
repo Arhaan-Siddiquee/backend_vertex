@@ -11,14 +11,14 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 var db *sql.DB
 
 func main() {
 	var err error
-	db, err = sql.Open("sqlite3", "./passwords.db")
+	db, err = sql.Open("sqlite", "./passwords.db")
 	if err != nil {
 		log.Fatal(err)
 	}
