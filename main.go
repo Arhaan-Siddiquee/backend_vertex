@@ -46,30 +46,41 @@ func createTable() {
 }
 
 func generateHandler(w http.ResponseWriter, r *http.Request) {
-	var password string
-	var isUnique bool
+    w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	for attempts := 0; attempts < 10; attempts++ {
-		password = generatePassword()
-		isUnique = checkAndStorePassword(password)
-		if isUnique {
-			break
-		}
-	}
+    if r.Method == http.MethodOptions {
+        w.WriteHeader(http.StatusOK)
+        return
+    }
 
-	if !isUnique {
-		http.Error(w, "Failed to generate a unique password", http.StatusInternalServerError)
-		return
-	}
+    var password string
+    var isUnique bool
 
-	resp := map[string]interface{}{
-		"password":    password,
-		"timestamp":   time.Now().UTC().Format(time.RFC3339),
-		"entropyBits": 128,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+    for attempts := 0; attempts < 10; attempts++ {
+        password = generatePassword()
+        isUnique = checkAndStorePassword(password)
+        if isUnique {
+            break
+        }
+    }
+
+    if !isUnique {
+        http.Error(w, "Failed to generate a unique password", http.StatusInternalServerError)
+        return
+    }
+
+    resp := map[string]interface{}{
+        "password":    password,
+        "timestamp":   time.Now().UTC().Format(time.RFC3339),
+        "entropyBits": 128,
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(resp)
 }
+
 
 func checkAndStorePassword(pwd string) bool {
 	stmt, err := db.Prepare("INSERT INTO passwords(password) VALUES(?)")
